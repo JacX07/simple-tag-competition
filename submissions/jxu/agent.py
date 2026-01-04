@@ -28,8 +28,7 @@ class StudentAgent:
     def __init__(self):
         self.input_dim = 16  # observation size for predator
         self.output_dim = 5  # discrete actions
-        self.model = DQNNetwork(self.input_dim, self.output_dim, hidden_dim=128)
-        self.model.eval()  # mode inference
+        
 
         #debug
         # Example: Load your trained models
@@ -38,7 +37,18 @@ class StudentAgent:
         
         # Example: Load predator model
         model_path = self.submission_dir / "predator_model.pth"
-        self.model = self.load_model(model_path)
+        # On utilise le DQN Standard
+        self.model = DQNNetwork(self.input_dim, self.output_dim, hidden_dim=128)
+
+        if model_path.exists():
+            try:
+                state_dict = torch.load(model_path, map_location=torch.device('cpu'))
+                self.model.load_state_dict(state_dict)
+                self.model.eval()
+            except Exception as e:
+                print(f"Error: {e}")
+        else:
+            print(f"Warning: No model found at {model_path}")
        
         self.memory = []
         self.max_memory = 5000
@@ -70,22 +80,7 @@ class StudentAgent:
 
     
     
-    def load_model(self, model_path):
-        """
-        Helper method to load a PyTorch model.
-        
-        Args:
-            model_path: Path to the .pth file
-            
-        Returns:
-            Loaded model
-        """
-        # Example implementation:
-        model = DQNNetwork(self.input_dim, self.output_dim, hidden_dim=128)
-        if model_path.exists():
-             model.load_state_dict(torch.load(model_path, map_location='cpu'))
-             model.eval()
-        return model
+    
         
 
 

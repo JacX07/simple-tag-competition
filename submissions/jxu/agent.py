@@ -68,37 +68,7 @@ class StudentAgent:
                 q_values = self.model(obs_tensor)
                 return torch.argmax(q_values, dim=1).item()
 
-    def store_transition(self, state, action, reward, next_state, done):
-        if len(self.memory) >= self.max_memory:
-            self.memory.pop(0)
-        self.memory.append((state, action, reward, next_state, done))
-
-    def train_step(self):
-        if len(self.memory) < self.batch_size:
-            return  # not enough samples
-
-        batch = random.sample(self.memory, self.batch_size)
-        states, actions, rewards, next_states, dones = zip(*batch)
-
-        states = torch.FloatTensor(states)
-        actions = torch.LongTensor(actions).unsqueeze(1)
-        rewards = torch.FloatTensor(rewards).unsqueeze(1)
-        next_states = torch.FloatTensor(next_states)
-        dones = torch.FloatTensor(dones).unsqueeze(1)
-
-        q_values = self.model(states).gather(1, actions)
-        with torch.no_grad():
-            max_next_q = self.model(next_states).max(1)[0].unsqueeze(1)
-            target_q = rewards + (1 - dones) * self.gamma * max_next_q
-
-        loss = F.mse_loss(q_values, target_q)
-
-        self.optimizer.zero_grad()
-        loss.backward()
-        self.optimizer.step()
-
-        # Decay epsilon
-        self.epsilon = max(self.epsilon_min, self.epsilon * self.epsilon_decay)
+    
     
     def load_model(self, model_path):
         """
@@ -126,3 +96,4 @@ if __name__ == "__main__":
     action = agent.get_action(obs, "adversary_0")
     print(f"Observation shape: {obs.shape}, Action: {action} (0-4)")
     print("✓ DQN agent is ready for testing and training")
+   
